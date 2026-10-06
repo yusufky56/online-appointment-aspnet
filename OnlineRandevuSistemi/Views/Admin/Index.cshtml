@@ -1,0 +1,64 @@
+@model IEnumerable<OnlineRandevuSistemi.Models.Appointment>
+
+@{
+    ViewData["Title"] = "Yönetici Paneli";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Randevu Listesi</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Müşteri</th>
+                                    <th>Tarih</th>
+                                    <th>Hizmet</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var appointment in Model)
+                                {
+                                    <tr>
+                                        <td>@appointment.User?.UserName</td>
+                                        <td>@appointment.AppointmentDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td>@appointment.ServiceType</td>
+                                        <td>
+                                            <span class="badge bg-@appointment.Status.BadgeColor()">
+                                                @appointment.Status.DisplayName()
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (appointment.Status == AppointmentStatus.Pending)
+                                            {
+                                                <form asp-action="ConfirmAppointment" method="post" style="display: inline;">
+                                                    <input type="hidden" name="id" value="@appointment.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        Onayla
+                                                    </button>
+                                                </form>
+                                                <form asp-action="CancelAppointment" method="post" style="display: inline;">
+                                                    <input type="hidden" name="id" value="@appointment.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bu randevuyu iptal etmek istediğinizden emin misiniz?')">
+                                                        İptal Et
+                                                    </button>
+                                                </form>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

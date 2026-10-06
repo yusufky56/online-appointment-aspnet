@@ -1,0 +1,75 @@
+@model OnlineRandevuSistemi.Models.Appointment
+
+@{
+    ViewData["Title"] = "Yeni Randevu";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Yeni Randevu Oluştur</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="form-group">
+                            <label asp-for="AppointmentDate" class="control-label"></label>
+                            <input asp-for="AppointmentDate" class="form-control" type="datetime-local" />
+                            <span asp-validation-for="AppointmentDate" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="ServiceType" class="control-label"></label>
+                            <select asp-for="ServiceType" class="form-control">
+                                <option value="">Hizmet Seçiniz</option>
+                                <option value="Saç Kesimi">Saç Kesimi</option>
+                                <option value="Saç Boyama">Saç Boyama</option>
+                                <option value="Manikür">Manikür</option>
+                                <option value="Pedikür">Pedikür</option>
+                                <option value="Cilt Bakımı">Cilt Bakımı</option>
+                                <option value="Masaj">Masaj</option>
+                                <option value="Epilasyon">Epilasyon</option>
+                            </select>
+                            <span asp-validation-for="ServiceType" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Notes" class="control-label"></label>
+                            <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Notes" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group text-center">
+                            <button type="submit" class="btn btn-primary">Randevu Oluştur</button>
+                            <a asp-action="Index" class="btn btn-secondary">Geri Dön</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(function () {
+            // URL'den tarih parametresini al
+            const urlParams = new URLSearchParams(window.location.search);
+            const date = urlParams.get('date');
+            
+            const toInput = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+
+            if (date) {
+                $('#AppointmentDate').val(toInput(new Date(date.replace(' ', 'T'))));
+            } else if (!$('#AppointmentDate').val() || $('#AppointmentDate').val().startsWith('0001')) {
+                // Varsayılan: bir saat sonrası
+                $('#AppointmentDate').val(toInput(new Date(Date.now() + 3600000)));
+            }
+        });
+    </script>
+}

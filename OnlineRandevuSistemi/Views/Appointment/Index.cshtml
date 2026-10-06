@@ -1,0 +1,136 @@
+@model IEnumerable<OnlineRandevuSistemi.Models.Appointment>
+
+@{
+    ViewData["Title"] = "Randevularım";
+}
+
+<link href='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css' rel='stylesheet' />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.print.min.css' rel='stylesheet' media='print' />
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Randevu Takvimi</h4>
+                </div>
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Randevularım</h4>
+                    <a asp-action="Create" class="btn btn-light">Yeni Randevu</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Hizmet</th>
+                                    <th>Durum</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>@item.AppointmentDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td>@item.ServiceType</td>
+                                        <td>
+                                            <span class="badge bg-@item.Status.BadgeColor()">
+                                                @item.Status.DisplayName()
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (item.Status == AppointmentStatus.Pending || item.Status == AppointmentStatus.Confirmed)
+                                            {
+                                                <form asp-action="Cancel" method="post" style="display: inline;">
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Randevuyu iptal etmek istediğinizden emin misiniz?')">
+                                                        İptal Et
+                                                    </button>
+                                                </form>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/locale/tr.js'></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,agendaWeek,agendaDay'
+                },
+                defaultView: 'agendaWeek',
+                locale: 'tr',
+                timezone: 'local',
+                selectable: true,
+                selectHelper: true,
+                select: function (start, end) {
+                    window.location.href = '/Appointment/Create?date=' + moment(start).format('YYYY-MM-DD HH:mm:ss');
+                },
+                events: function (start, end, timezone, callback) {
+                    $.ajax({
+                        url: '/Appointment/GetAppointments',
+                        type: 'GET',
+                        data: {
+                            start: start.format('YYYY-MM-DD'),
+                            end: end.format('YYYY-MM-DD')
+                        },
+                        success: function (result) {
+                            var events = [];
+                            $.each(result, function (i, data) {
+                                events.push({
+                                    id: data.id,
+                                    title: data.title,
+                                    start: moment(data.start).format('YYYY-MM-DD HH:mm:ss'),
+                                    end: moment(data.end).format('YYYY-MM-DD HH:mm:ss'),
+                                    color: data.status === 'Confirmed' ? '#28a745' :
+                                        data.status === 'Pending' ? '#ffc107' :
+                                        data.status === 'Cancelled' ? '#dc3545' : '#17a2b8'
+                                });
+                            });
+                            callback(events);
+                        }
+                    });
+                },
+                eventClick: function (calEvent, jsEvent, view) {
+                    // Randevu detaylarını göster
+                },
+                minTime: '09:00:00',
+                maxTime: '18:00:00',
+                slotDuration: '00:30:00',
+                slotLabelInterval: '01:00',
+                allDaySlot: false,
+                height: 'auto',
+                contentHeight: 'auto'
+            });
+        });
+    </script>
+}
