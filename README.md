@@ -60,3 +60,7 @@ OnlineRandevuSistemi/
 OnlineRandevuSistemi.Tests/
 └── AppointmentTests.cs   # End-to-end tests
 ```
+
+## License
+
+[MIT](LICENSE). Third-party libraries in OnlineRandevuSistemi/wwwroot/lib keep their own licenses.
